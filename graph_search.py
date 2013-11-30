@@ -2,6 +2,8 @@
 # Google Algorithm Workshop in 2013 Nov.
 
 import sys
+import Queue
+import time
 
 class Graph:
   class Node:
@@ -71,21 +73,90 @@ class Graph:
 
   # ==== Basic Exercise [B] ====
   # Calculates and prints a distance from 'src_name' to 'dst_name'.
-  def calculate_distance(self, src_name, dst_name):
+  def calculate_distance(self, src_name, dst_name, memo = {}):
     self.reset()
-    # Implement here.
+    src = self.get_node_from_name(src_name)
+    dst = self.get_node_from_name(dst_name)
+
+    node_list = Queue.Queue()
+
+    src.visited = True
+    src.distance = 0
+    node_list.put(src)
+
+    while node_list.qsize != 0:
+      node = node_list.get()
+      if node == dst:
+        # self.print_path(node)
+        return dst.distance
+      if not memo.has_key(node.name):
+        memo[node.name] = {}
+
+      for adjacent in node.adjacents:
+        if adjacent.visited:
+          continue
+        else:
+          adjacent.visited = True
+          adjacent.distance = node.distance + 1
+          adjacent.previous = node
+          if not memo[node.name].has_key(adjacent.name):
+            memo[node.name][adjacent.name] = adjacent.distance
+          node_list.put(adjacent)
+
+    return -1
+
 
   # ==== Advanced Exercise [A] ====
   # Calculates and prints the average distance and the max distance (i.e., diameter) of the graph.
   def calculate_average_and_max_distance(self):
     self.reset()
-    # Implement here.
+    dist_max = 0
+    dist_sum = 0
+
+    for src in self.nodes:
+      for dst in self.nodes:
+        if src == dst:
+          continue
+        else:
+          dist = self.calculate_distance(src.name, dst.name)
+          if dist > dist_max:
+            dist_max = dist
+          dist_sum = dist_sum + dist
+
+    average = float(dist_sum) / float((len(self.nodes) * (len(self.nodes) - 1)))
+
+    return (average, dist_max)
+
 
   # ==== Advanced Exercise [C] ====
   # Optimized version of calculate_average_and_max_distance().
   def calculate_average_and_max_distance_fast(self):
     self.reset()
     # Implement here.
+    memo = {}
+    max_dist = 0
+    sum_dist = 0
+
+    for src in self.nodes:
+      for dst in self.nodes:
+        # print "src: " + str(src) + "dst: " + dst + str(memo)
+        if src == dst:
+          continue
+        if not memo.has_key(src.name):
+          memo[src.name] = {}
+        if not memo[src.name].has_key(dst.name):
+          dist = self.calculate_distance(src.name, dst.name, memo)
+        else:
+          dist = memo[src.name][dst.name]
+          # print "src.name" + src.name + " dst.name" + dst.name
+        if max_dist < dist:
+          max_dist = dist
+        else:
+          sum_dist = sum_dist + dist
+
+    average = float(sum_dist) / float((len(self.nodes)) * (len(self.nodes) - 1))
+
+    return (average, max_dist)
 
   # ==== Advanced Exercise [D] ====
   # Optimized version of calculate_distance().
@@ -169,16 +240,28 @@ def main():
 
   # ==== Basic Exercise [B] ====
   if option == "distance":
-    graph.calculate_distance("A", "B")
-    graph.calculate_distance("B", "A")
+    ans1 = graph.calculate_distance("A", "B")
+    ans2 = graph.calculate_distance("B", "A")
+    print "distance1: " + str(ans1)
+    print "distance2: " + str(ans2)
 
   # ==== Advanced Exercise [A] ====
   elif option == "average":
-    graph.calculate_average_and_max_distance()
+    start = time.clock()
+    (average, dist_max) = graph.calculate_average_and_max_distance()
+    goal = time.clock()
+    print "average: " + str(average)
+    print "max: " + str(dist_max)
+    print "time: " + str(goal - start)
 
   # ==== Advanced Exercise [C] ====
   elif option == "average_fast":
-    graph.calculate_average_and_max_distance_fast()
+    start = time.clock()
+    (average, dist_max) = graph.calculate_average_and_max_distance_fast()
+    goal = time.clock()
+    print "average: "  + str(average)
+    print "max: " + str(dist_max)
+    print "time: " + str(goal - start)
 
   # ==== Advanced Exercise [D] ====
   elif option == "distance_fast":
