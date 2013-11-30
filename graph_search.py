@@ -145,7 +145,7 @@ class Graph:
         if not memo.has_key(src.name):
           memo[src.name] = {}
         if not memo[src.name].has_key(dst.name):
-          dist = self.calculate_distance(src.name, dst.name, memo)
+          dist = self.calculate_distance_fast(src.name, dst.name, memo)
         else:
           dist = memo[src.name][dst.name]
           # print "src.name" + src.name + " dst.name" + dst.name
@@ -160,9 +160,49 @@ class Graph:
 
   # ==== Advanced Exercise [D] ====
   # Optimized version of calculate_distance().
-  def calculate_distance_fast(self, src_name, dst_name):
+  def calculate_distance_fast(self, src_name, dst_name, memo={}):
     self.reset()
-    # Implement here.
+    src = self.get_node_from_name(src_name)
+    dst = self.get_node_from_name(dst_name)
+    src.visited = True
+    queue1 = Queue.Queue()
+    queue1.put(src)
+    queue2 = Queue.Queue()
+    queue2.put(dst)
+ 
+    q1 = queue1.get()
+    q2 = queue2.get()
+ 
+    while True:
+      while q1.distance <= q2.distance:
+        for adjacent in q1.adjacents:
+          if not adjacent.visited:
+            adjacent.previous = q1
+            adjacent.distance = q1.distance + 1
+            adjacent.visited = True
+            if not memo.has_key(q1.name):
+              memo[q1.name] = {}
+            if not memo[q1.name].has_key(adjacent.name):
+              memo[q1.name][adjacent.name] = adjacent.distance
+            if adjacent.reverse_visited:
+              return adjacent.distance + adjacent.reverse_distance
+            queue1.put(adjacent)
+        q1 = queue1.get()
+ 
+      while q2.distance < q1.distance:
+        for adjacent in q2.adjacents:
+          if not adjacent.reverse_visited:
+            adjacent.reverse_previous = q2
+            adjacent.reverse_distance = q2.reverse_distance + 1
+            adjacent.reverse_visited = True
+            if not memo.has_key(q2.name):
+              memo[q2.name] = {}
+            if not memo[q2.name].has_key(adjacent.name):
+              memo[q2.name][adjacent.name] = adjacent.distance
+            if adjacent.visited:
+              return adjacent.distance + adjacent.reverse_distance
+            queue2.put(adjacent)
+        q2 = queue2.get()
 
   # ==== Advanced Exercise [E] ====
   # Suggests followers for 'name'.
