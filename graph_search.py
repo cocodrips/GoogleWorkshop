@@ -99,8 +99,8 @@ class Graph:
           adjacent.visited = True
           adjacent.distance = node.distance + 1
           adjacent.previous = node
-          if not memo[node.name].has_key(adjacent.name):
-            memo[node.name][adjacent.name] = adjacent.distance
+          if not memo[src.name].has_key(adjacent.name):
+            memo[src.name][adjacent.name] = adjacent.distance
           node_list.put(adjacent)
 
     return -1
@@ -123,6 +123,7 @@ class Graph:
             dist_max = dist
           dist_sum = dist_sum + dist
 
+    print dist_sum
     average = float(dist_sum) / float((len(self.nodes) * (len(self.nodes) - 1)))
 
     return (average, dist_max)
@@ -139,22 +140,22 @@ class Graph:
 
     for src in self.nodes:
       for dst in self.nodes:
-        # print "src: " + str(src) + "dst: " + dst + str(memo)
+        # print "src: " + src.name + " dst: " + dst.name + str(memo)
         if src == dst:
           continue
         if not memo.has_key(src.name):
           memo[src.name] = {}
         if not memo[src.name].has_key(dst.name):
-          dist = self.calculate_distance_fast(src.name, dst.name, memo)
+          dist = self.calculate_distance(src.name, dst.name, memo)
         else:
           dist = memo[src.name][dst.name]
           # print "src.name" + src.name + " dst.name" + dst.name
         if max_dist < dist:
           max_dist = dist
-        else:
-          sum_dist = sum_dist + dist
+        sum_dist = sum_dist + dist
 
-    average = float(sum_dist) / float((len(self.nodes)) * (len(self.nodes) - 1))
+    print sum_dist
+    average = float(sum_dist) / float((len(self.nodes) * (len(self.nodes) - 1)))
 
     return (average, max_dist)
 
